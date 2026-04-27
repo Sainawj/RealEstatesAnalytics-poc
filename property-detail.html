@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Details | Prime Real Estate</title>
+    
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-KRJKLHX5');</script>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 2rem; border-radius: 1rem; max-width: 500px; width: 90%; position: relative; }
+        .modal-close { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; cursor: pointer; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1e3c72; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; }
+        .form-group input:focus { outline: none; border-color: #ff6b35; }
+        .form-group input.error { border-color: #ef4444; }
+        .error-message { color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem; display: none; }
+        .error-message.show { display: block; }
+        .booking-summary { background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
+        .btn-book { width: 100%; padding: 1rem; }
+    </style>
+</head>
+<body>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=KRJKLHX5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    
+    <nav class="navbar"><div class="container"><a href="index.html" class="brand">🏠 Prime Real Estate</a><div class="nav-links"><a href="index.html">← Back to Properties</a></div></div></nav>
+    
+    <main class="container"><div id="propertyDetail" class="property-detail-container"></div></main>
+    
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2>📅 Book Realtor Session</h2>
+            <div id="bookingSummary" class="booking-summary"></div>
+            <form id="bookingForm" onsubmit="submitBooking(event)">
+                <div class="form-group"><label>Email Address *</label><input type="email" id="userEmail" required placeholder="your@email.com"><div class="error-message" id="emailError">Valid email required</div></div>
+                <div class="form-group"><label>Phone Number *</label><input type="tel" id="userPhone" required placeholder="0712345678"><div class="error-message" id="phoneError">Valid Kenyan phone required</div></div>
+                <div class="form-group"><label>Your Name *</label><input type="text" id="userName" required placeholder="Full name"></div>
+                <div class="form-group"><label>Preferred Date *</label><input type="date" id="preferredDate" required></div>
+                <div class="form-group"><label>Preferred Time *</label><select id="preferredTime" required><option value="">Select time</option><option value="09:00">9:00 AM</option><option value="10:00">10:00 AM</option><option value="11:00">11:00 AM</option><option value="14:00">2:00 PM</option><option value="15:00">3:00 PM</option><option value="16:00">4:00 PM</option></select></div>
+                <div class="form-group"><label>Additional Notes</label><textarea id="notes" rows="2"></textarea></div>
+                <button type="submit" class="btn btn-primary btn-book">Confirm Booking →</button>
+            </form>
+        </div>
+    </div>
+    
+    <script src="js/analytics.js"></script>
+    <script src="js/properties.js"></script>
+    <script>
+        let currentProperty = null;
+        const property = JSON.parse(localStorage.getItem('selectedProperty'));
+        if (!property) window.location.href = 'index.html';
+        currentProperty = property;
+        const isRental = property.bedrooms !== undefined;
+        
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ 'event': 'view_item', 'ecommerce': { 'items': [{ 'item_id': property.id, 'item_name': property.name, 'price': property.price, 'currency': 'KES', 'item_category': isRental ? 'Apartment Rental' : 'Land/Plot', 'location': property.location }] } });
+        
+        const container = document.getElementById('propertyDetail');
+        if (isRental) {
+            container.innerHTML = `<div class="detail-card"><div class="detail-badge">${property.bedrooms === 0 ? 'Studio Apartment' : property.bedrooms + ' Bedroom Apartment'}</div><h1>${property.name}</h1><p class="location">📍 ${property.location}, Kenya</p><p class="price-large">KES ${property.price.toLocaleString()} <span class="period">/month</span></p><div class="detail-section"><h3>Property Features</h3><ul><li>✓ Fully Furnished</li><li>✓ 24/7 Security</li><li>✓ Parking Included</li><li>✓ Gym & Pool Access</li></ul></div><button id="bookSessionBtn" class="btn btn-primary btn-large">📅 Book a Session with Realtor →</button></div>`;
+        } else {
+            const priceInUSD = property.price_usd || Math.round(property.price / 130);
+            container.innerHTML = `<div class="detail-card"><div class="detail-badge">${property.location} Land</div><h1>${property.name}</h1><p class="location">📍 ${property.location}, Kenya</p><p class="size-large">📏 ${property.size}</p><p class="price-large">KES ${property.price.toLocaleString()} <span class="period">(~$${priceInUSD.toLocaleString()} USD)</span></p><div class="detail-section"><h3>Property Details</h3><ul><li>✓ Freehold Title Deed</li><li>✓ Ready for Construction</li><li>✓ Water & Electricity Access</li></ul></div><button id="bookSessionBtn" class="btn btn-primary btn-large">📅 Book a Session with Realtor →</button></div>`;
+        }
+        
+        document.getElementById('bookSessionBtn').addEventListener('click', showBookingModal);
+        
+        function showBookingModal() {
+            const modal = document.getElementById('bookingModal');
+            const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('preferredDate').min = tomorrow.toISOString().split('T')[0];
+            document.getElementById('bookingSummary').innerHTML = `<p><strong>Property:</strong> ${currentProperty.name}</p><p><strong>Location:</strong> ${currentProperty.location}</p><p><strong>Value:</strong> KES ${currentProperty.price.toLocaleString()}</p>`;
+            modal.classList.add('active');
+        }
+        
+        function closeModal() { document.getElementById('bookingModal').classList.remove('active'); document.getElementById('bookingForm').reset(); }
+        
+        function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+        function validatePhone(phone) { return /^(\+254|0)?[17]\d{8}$/.test(phone); }
+        
+        async function submitBooking(event) {
+            event.preventDefault();
+            const email = document.getElementById('userEmail').value.trim();
+            const phone = document.getElementById('userPhone').value.trim();
+            const userName = document.getElementById('userName').value.trim();
+            const preferredDate = document.getElementById('preferredDate').value;
+            const preferredTime = document.getElementById('preferredTime').value;
+            
+            let isValid = true;
+            if (!validateEmail(email)) { document.getElementById('emailError').classList.add('show'); isValid = false; }
+            else { document.getElementById('emailError').classList.remove('show'); }
+            if (!validatePhone(phone)) { document.getElementById('phoneError').classList.add('show'); isValid = false; }
+            else { document.getElementById('phoneError').classList.remove('show'); }
+            if (!userName) { alert('Please enter your name'); isValid = false; }
+            if (!preferredDate || !preferredTime) { alert('Please select date and time'); isValid = false; }
+            if (!isValid) return;
+            
+            window.dataLayer.push({ 'event': 'add_to_cart', 'ecommerce': { 'currency': 'KES', 'value': currentProperty.price, 'items': [{ 'item_id': currentProperty.id, 'item_name': currentProperty.name, 'price': currentProperty.price, 'quantity': 1, 'booking_type': 'realtor_session' }] } });
+            
+            const bookingDetails = { property: currentProperty, userEmail: email, userPhone: phone, userName: userName, preferredDate: preferredDate, preferredTime: preferredTime, notes: document.getElementById('notes').value, bookingType: isRental ? 'rental_consultation' : 'land_consultation', timestamp: new Date().toISOString() };
+            localStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
+            closeModal();
+            window.location.href = 'booking-success.html';
+        }
+        
+        window.onclick = function(event) { const modal = document.getElementById('bookingModal'); if (event.target === modal) closeModal(); }
+    </script>
+</body>
+</html>

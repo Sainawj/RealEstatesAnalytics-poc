@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Real Estate | Apartments & Land for Sale</title>
+    
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-KRJKLHX5');</script>
+    <!-- End Google Tag Manager -->
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRJKLHX5"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="brand">🏠 Prime Real Estate</a>
+            <div class="nav-links">
+                <a href="index.html">Properties</a>
+                <a href="#apartments">Apartments</a>
+                <a href="#land">Land</a>
+                <a href="#realtor" class="realtor-link">📅 Book Realtor</a>
+            </div>
+        </div>
+    </nav>
+    
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Find Your Dream Property in Kenya</h1>
+                <p>Luxury apartments in Nairobi • Prime land in Eldoret</p>
+                <button id="viewAllPropertiesBtn" class="btn btn-primary btn-large">View All Properties →</button>
+                <button id="directBookingBtn" class="btn btn-secondary btn-large">📅 Book Free Realtor Session</button>
+            </div>
+        </section>
+        
+        <div class="container">
+            <section id="apartments" class="properties-section">
+                <h2>🏢 Luxury Apartments (Monthly Rentals)</h2>
+                <div class="property-grid" id="apartmentsGrid"></div>
+            </section>
+            
+            <section id="land" class="properties-section">
+                <h2>🌍 Prime Land & Plots For Sale</h2>
+                <div class="location-filter">
+                    <button class="filter-btn active" data-location="all">All Locations</button>
+                    <button class="filter-btn" data-location="Nairobi">Nairobi ($3k - $20k)</button>
+                    <button class="filter-btn" data-location="Eldoret">Eldoret ($1k - $10k)</button>
+                </div>
+                <div class="property-grid" id="landGrid"></div>
+            </section>
+            
+            <section id="realtor" class="realtor-section">
+                <div class="realtor-card">
+                    <h2>📅 Need Expert Advice?</h2>
+                    <p>Book a free 45-minute consultation with our experienced realtors.</p>
+                    <div class="realtor-features">
+                        <div class="feature"><span>✓</span> Virtual or in-person</div>
+                        <div class="feature"><span>✓</span> No obligation</div>
+                        <div class="feature"><span>✓</span> Expert guidance</div>
+                    </div>
+                    <button id="directBookingBtn2" class="btn btn-primary btn-large">Book Your Free Session →</button>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <script src="js/analytics.js"></script>
+    <script src="js/properties.js"></script>
+    <script>
+        function pushViewItemListEvent(items, listName, listId) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                'event': 'view_item_list',
+                'ecommerce': {
+                    'item_list_id': listId,
+                    'item_list_name': listName,
+                    'items': items
+                }
+            });
+        }
+        
+        function renderApartments() {
+            const apartmentItems = apartments.map(apt => ({
+                item_id: apt.id, item_name: apt.name, price: apt.price,
+                currency: 'KES', index: apt.index, item_category: 'Apartment Rental',
+                location: apt.location, bedrooms: apt.bedrooms
+            }));
+            
+            document.getElementById('apartmentsGrid').innerHTML = apartments.map(apt => `
+                <div class="property-card">
+                    <div class="property-badge">${apt.bedrooms === 0 ? 'Studio' : apt.bedrooms + ' Bedroom'}</div>
+                    <h3>${apt.name}</h3>
+                    <p class="location">📍 ${apt.location}</p>
+                    <p class="price">KES ${apt.price.toLocaleString()} <span class="period">/month</span></p>
+                    <ul class="property-features">
+                        <li>✓ Fully Furnished</li>
+                        <li>✓ 24/7 Security</li>
+                        <li>✓ Parking Included</li>
+                    </ul>
+                    <button class="btn btn-primary view-details" data-property='${JSON.stringify(apt)}'>View & Book Session →</button>
+                </div>
+            `).join('');
+            
+            pushViewItemListEvent(apartmentItems, 'Luxury Apartments', 'apartments_list');
+            
+            document.querySelectorAll('.view-details').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    localStorage.setItem('selectedProperty', btn.dataset.property);
+                    window.location.href = 'property-detail.html';
+                });
+            });
+        }
+        
+        let currentLandFilter = 'all';
+        
+        function renderLandPlots() {
+            const filtered = currentLandFilter === 'all' ? landPlots : landPlots.filter(plot => plot.location === currentLandFilter);
+            const landItems = filtered.map(plot => ({
+                item_id: plot.id, item_name: plot.name, price: plot.price,
+                currency: 'KES', index: plot.index, item_category: 'Land/Plot',
+                location: plot.location, size: plot.size
+            }));
+            
+            document.getElementById('landGrid').innerHTML = filtered.map(plot => {
+                const priceInUSD = plot.price_usd || Math.round(plot.price / 130);
+                return `<div class="property-card land-card">
+                    <div class="property-badge">${plot.location}</div>
+                    <h3>${plot.name}</h3>
+                    <p class="location">📍 ${plot.location}</p>
+                    <p class="size">📏 ${plot.size}</p>
+                    <p class="price">KES ${plot.price.toLocaleString()}<br><small>~$${priceInUSD.toLocaleString()} USD</small></p>
+                    <ul class="property-features">
+                        <li>✓ Title Deed Available</li>
+                        <li>✓ Ready for Development</li>
+                    </ul>
+                    <button class="btn btn-primary view-details-land" data-property='${JSON.stringify(plot)}'>View & Book Session →</button>
+                </div>`;
+            }).join('');
+            
+            pushViewItemListEvent(landItems, `${currentLandFilter === 'all' ? 'All' : currentLandFilter} Land Plots`, 'land_list');
+            
+            document.querySelectorAll('.view-details-land').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    localStorage.setItem('selectedProperty', btn.dataset.property);
+                    window.location.href = 'property-detail.html?type=land';
+                });
+            });
+        }
+        
+        function directRealtorBooking() {
+            window.dataLayer.push({
+                'event': 'begin_checkout',
+                'ecommerce': { 'currency': 'KES', 'value': 0, 'items': [{ 'item_id': 'REALTOR_CONSULT_001', 'item_name': 'Free Realtor Consultation', 'price': 0, 'quantity': 1 }] }
+            });
+            
+            const serviceProperty = { id: 'SVC_REALTOR_001', name: 'Professional Realtor Consultation', price: 0, location: 'Virtual/In-person', size: '45-minute session' };
+            localStorage.setItem('bookingType', 'direct_consultation');
+            localStorage.setItem('bookingProperty', JSON.stringify(serviceProperty));
+            localStorage.setItem('selectedProperty', JSON.stringify(serviceProperty));
+            window.location.href = 'property-detail.html?direct=1';
+        }
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentLandFilter = btn.dataset.location;
+                renderLandPlots();
+            });
+        });
+        
+        document.getElementById('viewAllPropertiesBtn')?.addEventListener('click', () => {
+            const allProperties = [...apartments.map(apt => ({ ...apt, category: 'apartment' })), ...landPlots.map(plot => ({ ...plot, category: 'land' }))];
+            const allItems = allProperties.map(prop => ({ item_id: prop.id, item_name: prop.name, price: prop.price, currency: 'KES', item_category: prop.category === 'apartment' ? 'Apartment Rental' : 'Land/Plot', location: prop.location }));
+            pushViewItemListEvent(allItems, 'All Properties', 'all_properties_list');
+            document.getElementById('apartments').scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        document.getElementById('directBookingBtn')?.addEventListener('click', directRealtorBooking);
+        document.getElementById('directBookingBtn2')?.addEventListener('click', directRealtorBooking);
+        
+        renderApartments();
+        renderLandPlots();
+    </script>
+</body>
+</html>

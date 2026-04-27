@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed | Prime Real Estate</title>
+    
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-KRJKLHX5');</script>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .success-container { max-width: 700px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 1rem; box-shadow: 0 10px 40px rgba(0,0,0,0.1); text-align: center; }
+        .success-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .notification-status { border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; display: none; }
+        .notification-status.show { display: block; }
+        .notification-status.success { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+        .notification-status.error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .notification-status.loading { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .booking-details { text-align: left; margin: 1.5rem 0; padding: 1.5rem; background: #f9fafb; border-radius: 0.5rem; }
+        .detail-row { padding: 0.5rem 0; border-bottom: 1px solid #e5e7eb; }
+        .detail-row strong { display: inline-block; width: 140px; color: #4b5563; }
+        .button-group { display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #e5e7eb; border-top-color: #1e3c72; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) { .detail-row strong { display: block; width: auto; margin-bottom: 0.25rem; } }
+    </style>
+</head>
+<body>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRJKLHX5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    
+    <nav class="navbar"><div class="container"><a href="index.html" class="brand">🏠 Prime Real Estate</a><div class="nav-links"><a href="index.html">Home</a><a href="index.html#apartments">Apartments</a><a href="index.html#land">Land</a></div></div></nav>
+    
+    <main class="container"><div id="successContainer" class="success-container"><div class="success-loading">Processing your booking...</div></div></main>
+    
+    <script src="js/analytics.js"></script>
+    <script src="js/properties.js"></script>
+    <script>
+        // GOOGLE APPS SCRIPT URL - REPLACE WITH YOUR DEPLOYED URL
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_C1BkPocHogBIftIfCbHDlIoG5jaW4JcTej47LKw2ibYgNs7QMNnZGBBGhmkcYmgTLA/exec";
+        
+        const bookingDetails = JSON.parse(localStorage.getItem('bookingDetails'));
+        if (!bookingDetails) { displayDemoBooking(); } else { displaySuccessPage(bookingDetails); }
+        
+        // Image beacon method - NO CORS ISSUES!
+        function saveToGoogleSheets(booking, bookingId) {
+            return new Promise((resolve) => {
+                const params = new URLSearchParams({
+                    bookingId: bookingId,
+                    propertyName: booking.property.name,
+                    location: booking.property.location,
+                    propertyValue: booking.property.price,
+                    userEmail: booking.userEmail,
+                    userPhone: booking.userPhone,
+                    userName: booking.userName || "Guest",
+                    preferredDate: booking.preferredDate,
+                    preferredTime: booking.preferredTime,
+                    notes: booking.notes || "",
+                    _nocache: Date.now()
+                });
+                
+                const fullUrl = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+                console.log("📤 Sending image beacon to:", fullUrl);
+                
+                const img = new Image();
+                img.onload = () => { console.log("✅ Image beacon sent successfully"); resolve(true); };
+                img.onerror = () => { console.warn("⚠️ Image beacon failed"); resolve(true); };
+                img.src = fullUrl;
+                setTimeout(() => resolve(true), 3000);
+            });
+        }
+        
+        function showLocalNotification(message, type) {
+            const container = document.getElementById('successContainer');
+            const existingNotif = container.querySelector('.notification-status');
+            if (existingNotif) existingNotif.remove();
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = `notification-status ${type} show`;
+            notificationDiv.innerHTML = message;
+            container.insertBefore(notificationDiv, container.firstChild);
+            setTimeout(() => notificationDiv.remove(), 5000);
+        }
+        
+        function displayDemoBooking() {
+            const demoBooking = {
+                property: { name: 'Demo Property', location: 'Nairobi', price: 150000, id: 'DEMO_001' },
+                userEmail: 'sainajonathan@gmail.com', userPhone: '+254712345678', userName: 'Demo User',
+                preferredDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], preferredTime: '10:00',
+                bookingType: 'demo_consultation', notes: 'Test booking'
+            };
+            displaySuccessPage(demoBooking);
+        }
+        
+        async function displaySuccessPage(booking) {
+            const property = booking.property;
+            const bookingId = 'BK_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8).toUpperCase();
+            const sessionDate = new Date(booking.preferredDate);
+            const formattedDate = sessionDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const realtorName = booking.bookingType === 'land_consultation' ? 'Michael Kipchoge' : 'Sarah Wanjiku';
+            
+            const container = document.getElementById('successContainer');
+            container.innerHTML = `<div class="success-icon">📅</div><h1>Processing Your Booking...</h1><div class="notification-status loading show"><div class="spinner"></div>Saving your booking...</div>`;
+            
+            const sheetSaved = await saveToGoogleSheets(booking, bookingId);
+            await pushEnhancedConversionEvent(booking, bookingId, realtorName);
+            
+            container.innerHTML = `
+                <div class="success-icon">📅</div>
+                <h1>Booking Confirmed!</h1>
+                <p>Your realtor session has been scheduled.</p>
+                <div class="notification-status success show">✓ Booking saved successfully! Realtor has been notified.</div>
+                <div class="booking-details">
+                    <h3>📋 Booking Information</h3>
+                    <div class="detail-row"><strong>Booking ID:</strong> ${bookingId}</div>
+                    <div class="detail-row"><strong>Property:</strong> ${property.name}</div>
+                    <div class="detail-row"><strong>Location:</strong> ${property.location}, Kenya</div>
+                    <div class="detail-row"><strong>Property Value:</strong> KES ${property.price.toLocaleString()}</div>
+                    <div class="detail-row"><strong>Your Realtor:</strong> ${realtorName}</div>
+                    <div class="detail-row"><strong>Session Date:</strong> ${formattedDate}</div>
+                    <div class="detail-row"><strong>Session Time:</strong> ${booking.preferredTime} EAT</div>
+                </div>
+                <div class="booking-details">
+                    <h3>📞 Contact Information</h3>
+                    <div class="detail-row"><strong>Email:</strong> ${booking.userEmail}</div>
+                    <div class="detail-row"><strong>Phone:</strong> ${booking.userPhone}</div>
+                </div>
+                <div class="booking-details">
+                    <h3>✅ What's Next?</h3>
+                    <ul style="margin-left: 1.5rem; text-align: left;"><li>✓ A realtor will contact you within 2 hours</li><li>✓ Please have your ID ready for verification</li></ul>
+                </div>
+                <div class="button-group"><a href="index.html" class="btn btn-primary">Browse More Properties →</a><button onclick="window.print()" class="btn btn-secondary">📄 Print Details</button></div>
+            `;
+            
+            localStorage.removeItem('bookingDetails');
+            localStorage.removeItem('selectedProperty');
+        }
+        
+        async function normalizeAndHash(str) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(str.toLowerCase().trim());
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        
+        async function pushEnhancedConversionEvent(booking, bookingId, realtorName) {
+            const hashedEmail = await normalizeAndHash(booking.userEmail);
+            const hashedPhone = await normalizeAndHash(booking.userPhone.replace(/\D/g, ''));
+            
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                'event': 'generate_lead',
+                'ecommerce': { 'items': [{ 'item_id': booking.property.id, 'item_name': booking.property.name, 'price': booking.property.price, 'quantity': 1, 'currency': 'KES', 'booking_id': bookingId, 'realtor': realtorName }] },
+                'lead': { 'id': bookingId, 'value': booking.property.price * 0.01, 'currency': 'KES', 'type': 'realtor_booking' },
+                'enhanced_conversions': { 'email': hashedEmail, 'phone': hashedPhone }
+            });
+            console.log('🎉 GA4 Event pushed with Enhanced Conversions');
+        }
+    </script>
+</body>
+</html>
