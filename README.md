@@ -4,6 +4,10 @@ A production-ready analytics implementation demonstrating mastery of **Google Ta
 
 Built with **vanilla HTML, CSS, and JavaScript** to showcase deep technical integration without reliance on backend frameworks.
 
+View App online here - [RealEstatesAnalytics-poc](https://sainawj.github.io/RealEstatesAnalytics-poc/)
+<img width="1387" height="889" alt="image" src="https://github.com/user-attachments/assets/ec0ed52d-e2fb-44a4-ad29-2026b42f89d8" />
+
+
 ---
 
 ## 🏷️ Repository Tags
